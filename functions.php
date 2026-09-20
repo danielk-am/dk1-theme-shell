@@ -214,7 +214,7 @@ add_filter(
 		if ( false === strpos( $content, 'data-wpds-toggles="assistant"' ) ) {
 			$items .= '<button type="button" class="wpds-profile-menu__item" role="menuitem" data-wpds-toggles="assistant">'
 				. '<span class="wpds-profile-menu__icon dashicons dashicons-admin-comments" aria-hidden="true"></span>'
-				. esc_html__( 'Ask the assistant', 'app-shell' )
+				. esc_html__( 'Ask the assistant', 'dk1-theme-shell' )
 				. '</button>';
 		}
 
@@ -222,7 +222,7 @@ add_filter(
 			'<a class="wpds-profile-menu__item" role="menuitem" href="%s">'
 			. '<span class="wpds-profile-menu__icon dashicons dashicons-exit" aria-hidden="true"></span>%s</a>',
 			esc_url( wp_logout_url( home_url( '/' ) ) ),
-			esc_html__( 'Sign out', 'app-shell' )
+			esc_html__( 'Sign out', 'dk1-theme-shell' )
 		);
 
 		$panel = '<div class="wpds-profile-menu__panel" role="menu">' . $items . '</div>';
@@ -261,7 +261,7 @@ add_filter(
 							'<a class="wpds-profile-menu__item" role="menuitem" href="%s">'
 							. '<span class="wpds-profile-menu__icon dashicons dashicons-admin-generic" aria-hidden="true"></span>%s</a>',
 							esc_url( $destination ),
-							esc_html__( 'Settings', 'app-shell' )
+							esc_html__( 'Settings', 'dk1-theme-shell' )
 						);
 					}
 				}

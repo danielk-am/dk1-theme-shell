@@ -42,9 +42,9 @@ The block plugins aren't bundled. Saved markup alone doesn't provide their editi
 
 ## Install
 
-1. Download the repository ZIP from GitHub.
-2. Extract it and name the theme folder `dk1-theme-shell`.
-3. Copy that folder into your WordPress installation's `wp-content/themes/` directory.
+1. Download `dk1-theme-shell-0.1.0.zip` from the [latest release](https://github.com/danielk-am/dk1-theme-shell/releases/latest).
+2. In WordPress, open **Appearance → Themes → Add New → Upload Theme**.
+3. Select the ZIP and install it.
 4. Activate the block plugins needed by your pages.
 5. Activate **DK1 Theme Shell** in WordPress.
 
@@ -83,7 +83,7 @@ Edit shared template parts to change navigation and headers across pages. WordPr
 
 Use a child theme for changes you want to keep separate from theme updates. The presets in [theme.json](theme.json) include colour, spacing, and font settings, with separate `body`, `heading`, and `mono` font families.
 
-The WordPress text domain remains `wpds-canvas`. Keep it when working with existing translations and block patterns.
+The translation text domain is `dk1-theme-shell`. Existing pattern names keep the `wpds-canvas` prefix so saved pattern references continue to work.
 
 ## Development
 

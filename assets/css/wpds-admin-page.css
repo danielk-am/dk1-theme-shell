@@ -183,7 +183,7 @@
 }
 
 .wpds-index-hero h1 {
-	font-size: var( --wpds-typography-font-size-3xl, 32px );
+	font-size: var( --wpds-typography-font-size-2xl, 32px );
 	line-height: 1.15;
 	margin: 0 auto;
 	max-inline-size: 18em;

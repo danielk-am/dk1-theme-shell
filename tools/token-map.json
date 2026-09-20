@@ -136,6 +136,7 @@
 		"styles.blocks.core/post-title.typography.fontWeight": "--wpds-typography-font-weight-emphasis"
 	},
 	"componentPrefixes": [
-		"--wpds-app-sidebar-"
+		"--wpds-app-sidebar-",
+		"--wpds-app-shell-"
 	]
 }

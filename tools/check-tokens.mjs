@@ -128,7 +128,7 @@ function resolve( root, pointer ) {
 /* ------------------------------------------------------------- the check */
 
 const themeJson = JSON.parse( read( join( themeDir, 'theme.json' ), 'theme.json' ) );
-const { map, $unmapped: unmapped = {} } = JSON.parse(
+const { map, $unmapped: unmapped = {}, componentPrefixes = [] } = JSON.parse(
 	read( join( here, 'token-map.json' ), 'tools/token-map.json' )
 );
 
@@ -173,7 +173,12 @@ for ( const [ pointer, expected ] of Object.entries( map ) ) {
 	}
 
 	const want = normalize( tokens.get( expected ) );
-	const got = normalize( actual );
+	const reference = /^var\(\s*(--wpds-[a-z0-9-]+)\s*(?:,\s*([^()]+))?\)$/.exec( String( actual ) );
+	// Styles may reference a token directly; presets are still compared as literals.
+	const got = normalize( reference && reference[ 1 ] === expected ? tokens.get( expected ) : actual );
+	if ( reference && reference[ 2 ] && normalize( reference[ 2 ] ) !== want ) {
+		errors.push( `${ pointer }: fallback ${ reference[ 2 ] } differs from ${ expected }` );
+	}
 	if ( want !== got ) {
 		errors.push( `${ pointer }: theme.json says ${ actual }, ${ expected } is ${ tokens.get( expected ) }` );
 	}
@@ -213,7 +218,7 @@ for ( const file of readdirSync( cssDir ).filter( ( f ) => f.endsWith( '.css' ) 
 		 * inferred, so a typo'd token name cannot hide behind a plausible
 		 * component-looking prefix.
 		 */
-		const isComponentKnob = ( map.componentPrefixes || [] ).some( ( p ) => name.startsWith( p ) );
+		const isComponentKnob = componentPrefixes.some( ( p ) => name.startsWith( p ) );
 		if ( ! tokens.has( name ) && ! isComponentKnob ) {
 			errors.push( `assets/css/${ file }: ${ name } is not in the token file` );
 		}

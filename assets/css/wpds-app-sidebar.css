@@ -897,9 +897,9 @@
  */
 .wpds-js .wpds-profile-menu__panel {
 	background-color: var( --wpds-color-background-surface-neutral-strong, #fff );
-	border: var( --wpds-border-width-xs, 1px ) solid var( --wpds-color-stroke-neutral-weak, #e0e0e0 );
+	border: var( --wpds-border-width-xs, 1px ) solid var( --wpds-color-stroke-surface-neutral-weak, #e0e0e0 );
 	border-radius: var( --wpds-border-radius-md, 4px );
-	box-shadow: var( --wpds-shadow-m, 0 5px 15px rgba( 0, 0, 0, 0.08 ) );
+	box-shadow: 0 5px 15px rgba( 0, 0, 0, 0.08 );
 	inset-block-end: calc( 100% + var( --wpds-dimension-gap-sm, 8px ) );
 	inset-inline: var( --wpds-dimension-gap-sm, 8px );
 	padding-block: var( --wpds-dimension-padding-sm, 8px );
