@@ -1,0 +1,10 @@
+{
+	"name": "@danielk-am/dk1-theme-shell",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Block theme whose global styles are the WordPress Design System tokens.",
+	"license": "GPL-2.0-or-later",
+	"scripts": {
+		"check": "node tools/check-tokens.mjs"
+	}
+}

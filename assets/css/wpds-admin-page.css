@@ -1,0 +1,322 @@
+/*
+ * The admin page shell.
+ *
+ * This is a block-markup port of @wordpress/admin-ui's `Page` component
+ * (v2.8.0, packages/admin-ui/src/page/style.module.css and header.tsx), which
+ * is the design system's answer to "what does a modern WordPress admin page
+ * look like". Not the PHP-era `.wrap` / `.page-title-action` chrome: that
+ * language is frozen, and admin-ui is what new admin surfaces are built from.
+ *
+ * Every value below is the token admin-ui uses, in the same place it uses it.
+ * The one thing block markup cannot port is the React composition, so the
+ * structure lives in parts/admin-header.html and the measurements live here.
+ *
+ * Page      background surface-neutral, foreground content-neutral   (theme.json root)
+ * Header    padding-lg padding-2xl, sticky, surface-neutral-strong,
+ *           hairline of stroke-surface-neutral-WEAK underneath
+ * Title     Text variant="heading-lg" as h1: 15px / 600, NOT a 32px
+ *           document title. Admin pages are dense.
+ * Subtitle  body-md in foreground-content-neutral-weak, 4px below
+ * Content   padding-lg padding-2xl, full width, no measure
+ */
+
+.wpds-admin-page__header {
+	background-color: var( --wpds-color-background-surface-neutral-strong, #fff );
+	/* The other half of the shared height; see --canvas-header-height. */
+	box-sizing: border-box;
+	min-block-size: var( --canvas-header-height, 72px );
+	/* The hairline is an inset box-shadow, not a border: a border adds a
+	 * layout pixel, makes the bar odd, and centres children on half pixels
+	 * (the W1 diagnosis; changed together with --canvas-header-height and
+	 * the wpds/app-sidebar block's own header). */
+	box-shadow: inset 0 calc( -1 * var( --wpds-border-width-xs, 1px ) ) 0 var( --wpds-color-stroke-surface-neutral-weak, #f0f0f0 );
+	/*
+	 * SLIM at every width (Daniel, 2026-09-01, the P2 toolbar): block padding
+	 * is the lean 8px everywhere, matching --canvas-header-height's one
+	 * expression; only the inline gutter still narrows on small screens.
+	 *
+	 * NOT sticky any more (Daniel, same day): the header scrolls away with
+	 * the content, and the sidebar's escaped toggle is deliberately the only
+	 * fixed thing in the content area -- a bare 24px ghost, by Daniel's
+	 * explicit call, even once it floats over scrolled content.
+	 */
+	padding: var( --wpds-dimension-padding-sm, 8px ) var( --wpds-dimension-padding-2xl, 24px );
+}
+
+@media ( max-width: 782px ) {
+	.wpds-admin-page__header {
+		padding-inline: var( --wpds-dimension-padding-lg, 16px );
+	}
+}
+
+/*
+ * admin-ui's header is a column Stack, and Stack carries no default gap: the
+ * only thing between the title row and the subtitle is the subtitle's own
+ * padding. Say gap 0 explicitly, because the theme's blockGap would otherwise
+ * put 16px there.
+ */
+.wpds-admin-page__header.wp-block-group {
+	gap: 0;
+}
+
+/*
+ * The LEAD ROW, pinned to the same 40px control --canvas-header-height is
+ * built from (Daniel, 2026-08-27: "make the lines align when it's two lines
+ * too"). It measured 40px already, but only because the action buttons happen
+ * to be 40px tall: a header with no actions fell back to this 32px floor and
+ * dropped its title 4px, which is exactly the drift the sidebar's matching
+ * lead row would then inherit. Saying size-lg here makes the agreement a
+ * shared expression instead of a coincidence.
+ */
+.wpds-admin-page__header-row {
+	align-items: center;
+	gap: var( --wpds-dimension-gap-sm, 8px );
+	min-height: var( --wpds-dimension-size-lg, 40px );
+}
+
+/* The title truncates rather than wrapping; a page title is one line. */
+.wpds-admin-page__header-row .wp-block-post-title,
+.wpds-admin-page__title {
+	margin: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wpds-admin-page__subtitle {
+	margin-block: 0;
+	padding-block-end: var( --wpds-dimension-padding-xs, 4px );
+}
+
+.wpds-admin-page__content {
+	padding: var( --wpds-dimension-padding-lg, 16px ) var( --wpds-dimension-padding-2xl, 24px );
+}
+
+/*
+ * Header actions keep their own row and never shrink, matching
+ * .header-actions. Buttons in an admin header are the design system's default
+ * 40px control, so the header grows to fit them rather than squashing them.
+ */
+.wpds-admin-page__actions {
+	flex-shrink: 0;
+	gap: var( --wpds-dimension-gap-sm, 8px );
+}
+
+/*
+ * admin-ui's Page fills its container: no outer margin, and a header that is
+ * sticky against the top of the scroll area. The theme's root padding (32px
+ * block, correct for a document) floated the whole shell and left the sticky
+ * header stranded 32px down the page, which is visible the moment you scroll.
+ * Cancelled on exactly the pages that use the shell.
+ *
+ * Scoped with :has() rather than a body class because page.html is the DEFAULT
+ * page template and WordPress gives it no class of its own, so the selector
+ * names the thing it actually depends on. Both roots are listed: the front end
+ * scrolls .wp-site-blocks, the editor canvas .is-root-container.
+ */
+.wp-site-blocks:has( .wpds-admin-page__header ),
+.is-root-container:has( .wpds-admin-page__header ) {
+	padding-block: 0;
+}
+
+/*
+ * The lead group: the sidebar toggle and the title travel together on the
+ * left, which is how admin-ui composes its header (SidebarToggleSlot, visual,
+ * title in one start-justified Stack, actions in another). Without the group
+ * the toggle became a third space-between child and pushed the title to the
+ * middle of the bar.
+ */
+.wpds-admin-page__header-lead {
+	align-items: center;
+	/* Shrinkable, so the actions keep their size and the TITLE gives way. */
+	flex: 1 1 auto;
+	gap: var( --wpds-dimension-gap-sm, 8px );
+	min-inline-size: 0;
+}
+
+/*
+ * The title is one line at every width, ellipsized when the lead runs out of
+ * room. A lean header cannot be lean if a long site name wraps it to two
+ * lines under the actions; admin-ui's own Page header truncates, and so does
+ * the sidebar's app name.
+ */
+.wpds-admin-page__title,
+.wpds-admin-page__header-lead .wp-block-site-title,
+.wpds-admin-page__header-lead .wp-block-heading {
+	min-inline-size: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/*
+ * A template part renders inside a wrapper element, and that wrapper is
+ * exactly as tall as the header it contains. position: sticky is bounded by
+ * its containing block, so the header had nowhere to travel and scrolled away
+ * with the content: measured on a page tall enough to scroll, the header went
+ * from top 0 to top -1052 while the sidebar correctly stayed at 0.
+ *
+ * display: contents removes the wrapper as a box without removing the part, so
+ * the real <header> becomes a direct child of the scrolling main column and
+ * sticks against it. The template also stops asking for tagName "header" on
+ * the wrapper, since the part's own root is already one and two nested
+ * headers is a semantic muddle nobody needed.
+ *
+ * Scoped to the main column on purpose: the SIDEBAR's part wrapper is the
+ * styled element itself, and display: contents there would delete the sidebar.
+ */
+.wpds-app-shell__main > .wp-block-template-part {
+	display: contents;
+}
+
+/* --------------------------------------------------------- index landing */
+
+/*
+ * The complete index (Daniel, 2026-08-27): hero, stats, deck, journal,
+ * FAQ, CTA - authored blocks in the template; the theme only spaces and
+ * centers them. Sections breathe with a stated rhythm rather than the
+ * blocks' own margins.
+ */
+.wpds-index-hero {
+	padding-block: var( --wpds-dimension-padding-3xl, 32px ) var( --wpds-dimension-padding-2xl, 24px );
+	text-align: center;
+}
+
+.wpds-index-hero h1 {
+	font-size: var( --wpds-typography-font-size-3xl, 32px );
+	line-height: 1.15;
+	margin: 0 auto;
+	max-inline-size: 18em;
+}
+
+.wpds-index-hero__sub {
+	color: var( --wpds-color-foreground-content-neutral-weak, #707070 );
+	font-size: var( --wpds-typography-font-size-lg, 15px );
+	line-height: var( --wpds-typography-line-height-md, 24px );
+	margin: var( --wpds-dimension-gap-md, 12px ) auto 0;
+	max-inline-size: 34em;
+}
+
+.wpds-index-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var( --wpds-dimension-gap-sm, 8px );
+	justify-content: center;
+	margin-block-start: var( --wpds-dimension-gap-lg, 16px );
+}
+
+.wpds-index-section {
+	margin-block-start: var( --wpds-dimension-gap-3xl, 48px );
+}
+
+.wpds-index-section > h2 {
+	font-size: var( --wpds-typography-font-size-xl, 20px );
+	line-height: var( --wpds-typography-line-height-lg, 28px );
+	margin: 0 0 var( --wpds-dimension-gap-lg, 16px );
+}
+
+/* FAQ accordions stack with a stated gap; each card draws its own frame. */
+.wpds-index-faq > .wpds-collapsible-card + .wpds-collapsible-card {
+	margin-block-start: var( --wpds-dimension-gap-sm, 8px );
+}
+
+.wpds-index-cta {
+	background-color: var( --wpds-color-background-surface-brand, #ecf0fa );
+	border-radius: var( --wpds-border-radius-lg, 8px );
+	margin-block-end: var( --wpds-dimension-gap-3xl, 48px );
+	padding: var( --wpds-dimension-padding-3xl, 32px ) var( --wpds-dimension-padding-lg, 16px );
+	text-align: center;
+}
+
+.wpds-index-cta > h2 {
+	margin: 0;
+}
+
+.wpds-index-cta > p {
+	color: var( --wpds-color-foreground-content-neutral-weak, #707070 );
+	margin: var( --wpds-dimension-gap-sm, 8px ) 0 0;
+}
+
+/* --------------------------------------------------------- the storybook */
+
+/*
+ * Pages built by ui-components-blocks/tools/make-example-pages.js: one page
+ * per inserter group, each block shown as the inserter previews it and then
+ * once per value of every enum control it declares. The rows are authored as
+ * core/group, so everything here is layout for the LABELS; the samples
+ * themselves are left alone, because a storybook that restyles its exhibits
+ * is not showing you the block.
+ */
+
+.wpds-example__name {
+	margin-block: 0 var( --wpds-dimension-gap-sm, 8px );
+}
+
+.wpds-example__name code,
+.wpds-example__control code {
+	background: none;
+	color: var( --wpds-color-foreground-content-neutral-weak, #757575 );
+	font-size: var( --wpds-typography-font-size-sm, 12px );
+	padding: 0;
+}
+
+/*
+ * Label beside its row rather than above it, so a block with five enums reads
+ * as five lines and not fifteen.
+ */
+.wpds-example__row {
+	align-items: baseline;
+	border-block-start: var( --wpds-border-width-xs, 1px ) solid
+		var( --wpds-color-stroke-surface-neutral-weak, #f0f0f0 );
+	display: flex;
+	flex-wrap: wrap;
+	gap: var( --wpds-dimension-gap-lg, 16px );
+	margin-block-start: var( --wpds-dimension-gap-lg, 16px );
+	padding-block-start: var( --wpds-dimension-gap-md, 12px );
+}
+
+.wpds-example__control {
+	flex: 0 0 auto;
+	margin-block: 0;
+	min-inline-size: 104px;
+}
+
+/* The values group carries its own flex layout from the block; only the
+ * gap and the room to grow belong here. */
+.wpds-example__values {
+	flex: 1 1 320px;
+	gap: var( --wpds-dimension-gap-lg, 16px );
+}
+
+/*
+ * Each state in a variant row is labelled with the value it shows, because a
+ * row of six boxes that differ by one pixel of padding says nothing without
+ * the value beside it.
+ */
+.wpds-example__value {
+	display: flex;
+	flex-direction: column;
+	gap: var( --wpds-dimension-gap-sm, 8px );
+}
+
+.wpds-example__value-label {
+	color: var( --wpds-color-foreground-content-neutral-weak, #757575 );
+	font-family: var( --wpds-typography-font-family-mono, ui-monospace, monospace );
+	font-size: var( --wpds-typography-font-size-xs, 11px );
+	margin: 0;
+}
+
+/*
+ * A sample needs room to be itself. Text fields and search controls collapsed
+ * to 92px in the variant rows, which reads as a broken control rather than a
+ * narrow one, so each state gets a floor and may grow to the row.
+ */
+.wpds-example__value {
+	/*
+	 * A basis, not a minimum. min-inline-size: min(240px, 100%) resolved the
+	 * 100% against a zero flex basis and collapsed the state to 92px, which
+	 * reads as a broken control rather than a narrow one. A 240px basis that
+	 * may grow and wrap gives every state room to be itself.
+	 */
+	flex: 1 1 240px;
+}

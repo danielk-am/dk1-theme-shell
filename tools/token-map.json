@@ -1,0 +1,141 @@
+{
+	"$comment": [
+		"Every literal in theme.json, and where it comes from in core's design-tokens.css.",
+		"A string value asserts equality with that token. A { ratio: [ a, b ] } value asserts",
+		"the number equals a / b, which is how a px line-height pair becomes a unitless one.",
+		"null means the value is deliberately NOT a token; state why in $unmapped.",
+		"tools/check-tokens.mjs fails if any preset is missing from this map, so a new preset",
+		"cannot be added without saying what it is."
+	],
+	"$unmapped": {
+		"settings.typography.fontSizes[display].size": "A hero's one display size, above the 2xl the WPDS scale stops at. Fluid, 36px to 54px. Public sites' heroes (asiamannequin, themannequinshop, frozenmeat) all sat at 32px and read as body-sized; no token to mirror.",
+		"settings.spacing.spacingSizes[80].size": "48px, twice the XL step. WPDS stops at gap-3xl (40px); page level rhythm needs one more rung and inventing it here is more honest than bending a token to fit.",
+		"settings.color.palette[accent].color": "A brand's second colour, as text on ink or as a rule. WPDS has no accent role and the base has no second colour, so it equals brand until a site binds it; it is a core-block preset only, with no token to mirror.",
+		"settings.color.palette[chrome].color": "A site's header/footer bar colour, distinct from neutral-strong (which stays the system's dark ink fill and dark solid-button colour). No token behind it: core-block preset only, so it reaches core blocks, not wpds blocks. Equals brand until a child theme binds it."
+	},
+	"map": {
+		"settings.color.palette[base].color": "--wpds-color-background-surface-neutral",
+		"settings.color.palette[base-strong].color": "--wpds-color-background-surface-neutral-strong",
+		"settings.color.palette[base-weak].color": "--wpds-color-background-surface-neutral-weak",
+		"settings.color.palette[contrast].color": "--wpds-color-foreground-content-neutral",
+		"settings.color.palette[contrast-weak].color": "--wpds-color-foreground-content-neutral-weak",
+		"settings.color.palette[stroke].color": "--wpds-color-stroke-surface-neutral",
+		"settings.color.palette[stroke-weak].color": "--wpds-color-stroke-surface-neutral-weak",
+		"settings.color.palette[stroke-strong].color": "--wpds-color-stroke-surface-neutral-strong",
+		"settings.color.palette[brand].color": "--wpds-color-background-interactive-brand-strong",
+		"settings.color.palette[brand-pressed].color": "--wpds-color-background-interactive-brand-strong-active",
+		"settings.color.palette[brand-on].color": "--wpds-color-foreground-interactive-brand-strong",
+		"settings.color.palette[brand-surface].color": "--wpds-color-background-surface-brand",
+		"settings.color.palette[brand-content].color": "--wpds-color-foreground-content-brand",
+		"settings.color.palette[accent].color": null,
+		"settings.color.palette[chrome].color": null,
+		"settings.color.palette[neutral-strong].color": "--wpds-color-background-interactive-neutral-strong",
+		"settings.color.palette[success].color": "--wpds-color-foreground-content-success-weak",
+		"settings.color.palette[success-surface].color": "--wpds-color-background-surface-success",
+		"settings.color.palette[info].color": "--wpds-color-foreground-content-info-weak",
+		"settings.color.palette[info-surface].color": "--wpds-color-background-surface-info",
+		"settings.color.palette[warning].color": "--wpds-color-foreground-content-warning-weak",
+		"settings.color.palette[warning-surface].color": "--wpds-color-background-surface-warning",
+		"settings.color.palette[error].color": "--wpds-color-foreground-content-error-weak",
+		"settings.color.palette[error-surface].color": "--wpds-color-background-surface-error",
+		"settings.typography.fontFamilies[body].fontFamily": "--wpds-typography-font-family-body",
+		"settings.typography.fontFamilies[heading].fontFamily": "--wpds-typography-font-family-heading",
+		"settings.typography.fontFamilies[mono].fontFamily": "--wpds-typography-font-family-mono",
+		"settings.typography.fontSizes[x-small].size": "--wpds-typography-font-size-xs",
+		"settings.typography.fontSizes[small].size": "--wpds-typography-font-size-sm",
+		"settings.typography.fontSizes[medium].size": "--wpds-typography-font-size-md",
+		"settings.typography.fontSizes[large].size": "--wpds-typography-font-size-lg",
+		"settings.typography.fontSizes[x-large].size": "--wpds-typography-font-size-xl",
+		"settings.typography.fontSizes[xx-large].size": "--wpds-typography-font-size-2xl",
+		"settings.typography.fontSizes[display].size": null,
+		"settings.spacing.spacingSizes[10].size": "--wpds-dimension-padding-xs",
+		"settings.spacing.spacingSizes[20].size": "--wpds-dimension-padding-sm",
+		"settings.spacing.spacingSizes[30].size": "--wpds-dimension-padding-md",
+		"settings.spacing.spacingSizes[40].size": "--wpds-dimension-padding-lg",
+		"settings.spacing.spacingSizes[50].size": "--wpds-dimension-padding-2xl",
+		"settings.spacing.spacingSizes[60].size": "--wpds-dimension-padding-3xl",
+		"settings.spacing.spacingSizes[70].size": "--wpds-dimension-gap-3xl",
+		"settings.spacing.spacingSizes[80].size": null,
+		"settings.layout.contentSize": "--wpds-dimension-surface-width-xl",
+		"settings.layout.wideSize": "--wpds-dimension-surface-width-2xl",
+		"styles.typography.lineHeight": {
+			"ratio": [
+				"--wpds-typography-line-height-sm",
+				"--wpds-typography-font-size-md"
+			]
+		},
+		"styles.typography.fontWeight": "--wpds-typography-font-weight-default",
+		"styles.elements.heading.typography.fontWeight": "--wpds-typography-font-weight-emphasis",
+		"styles.elements.h1.typography.lineHeight": {
+			"ratio": [
+				"--wpds-typography-line-height-2xl",
+				"--wpds-typography-font-size-2xl"
+			]
+		},
+		"styles.elements.h2.typography.lineHeight": {
+			"ratio": [
+				"--wpds-typography-line-height-md",
+				"--wpds-typography-font-size-xl"
+			]
+		},
+		"styles.elements.h3.typography.lineHeight": {
+			"ratio": [
+				"--wpds-typography-line-height-sm",
+				"--wpds-typography-font-size-lg"
+			]
+		},
+		"styles.elements.h4.typography.lineHeight": {
+			"ratio": [
+				"--wpds-typography-line-height-sm",
+				"--wpds-typography-font-size-md"
+			]
+		},
+		"styles.elements.h5.typography.lineHeight": {
+			"ratio": [
+				"--wpds-typography-line-height-sm",
+				"--wpds-typography-font-size-md"
+			]
+		},
+		"styles.elements.h6.typography.lineHeight": {
+			"ratio": [
+				"--wpds-typography-line-height-xs",
+				"--wpds-typography-font-size-xs"
+			]
+		},
+		"styles.elements.caption.typography.lineHeight": {
+			"ratio": [
+				"--wpds-typography-line-height-xs",
+				"--wpds-typography-font-size-sm"
+			]
+		},
+		"styles.elements.link.:hover.color.text": "--wpds-color-foreground-interactive-brand-active",
+		"styles.elements.link.:focus.color.text": "--wpds-color-foreground-interactive-brand-active",
+		"styles.elements.button.border.radius": "--wpds-border-radius-sm",
+		"styles.elements.button.border.width": "--wpds-border-width-xs",
+		"styles.elements.button.typography.fontWeight": "--wpds-typography-font-weight-emphasis",
+		"styles.elements.button.typography.lineHeight": {
+			"ratio": [
+				"--wpds-typography-line-height-sm",
+				"--wpds-typography-font-size-md"
+			]
+		},
+		"styles.elements.button.:focus.outline.width": "--wpds-border-width-focus",
+		"styles.blocks.core/code.border.radius": "--wpds-border-radius-md",
+		"styles.blocks.core/code.border.width": "--wpds-border-width-xs",
+		"styles.blocks.core/code.typography.lineHeight": {
+			"ratio": [
+				"--wpds-typography-line-height-xs",
+				"--wpds-typography-font-size-sm"
+			]
+		},
+		"styles.blocks.core/preformatted.border.radius": "--wpds-border-radius-md",
+		"styles.blocks.core/preformatted.border.width": "--wpds-border-width-xs",
+		"styles.blocks.core/quote.border.left.width": "--wpds-border-width-md",
+		"styles.blocks.core/table.border.width": "--wpds-border-width-xs",
+		"styles.blocks.core/site-title.typography.fontWeight": "--wpds-typography-font-weight-emphasis",
+		"styles.blocks.core/post-title.typography.fontWeight": "--wpds-typography-font-weight-emphasis"
+	},
+	"componentPrefixes": [
+		"--wpds-app-sidebar-"
+	]
+}
