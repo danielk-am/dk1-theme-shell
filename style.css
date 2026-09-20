@@ -1,0 +1,24 @@
+/*
+Theme Name: DK1 Theme Shell
+Theme URI: https://github.com/danielk-am/dk1-theme-shell
+Author: Daniel Kam with ChatGPT
+Author URI: https://danielk.am
+Package: @danielk-am/dk1-theme-shell
+Description: A block theme whose global styles ARE the WordPress Design System tokens. Presets, elements and block styles are derived from core's own design-tokens.css (the same file @wordpress/ui and @wordpress/components consume), so a mockup built with WPDS Blocks reads as the primitives in the editor and on the front end instead of inheriting a content theme's voice.
+Requires at least: 7.1
+Tested up to: 7.1
+Requires PHP: 7.4
+Version: 0.1.0
+Publication Date: 2026-09-20
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: wpds-canvas
+Tags: block-theme, full-site-editing, one-column, editor-style, wide-blocks
+*/
+
+/*
+ * Intentionally header-only. Everything visual lives in theme.json (presets,
+ * elements, block styles) and assets/css/wpds-canvas.css (the box-model and
+ * form-control layer theme.json cannot express). Keeping this file empty means
+ * there is exactly one place to look for any given declaration.
+ */

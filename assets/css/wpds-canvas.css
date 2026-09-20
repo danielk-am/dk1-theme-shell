@@ -1,0 +1,290 @@
+/*
+ * WPDS Canvas, the layer theme.json cannot express.
+ *
+ * Everything here is either a box model (heights, control padding, focus
+ * rings) or a compatibility shim. Colors, type and spacing belong in
+ * theme.json; if a declaration below could have been a preset, it is in the
+ * wrong file.
+ *
+ * Every value is read from a --wpds-* custom property, never re-typed. Those
+ * properties come from core's own design-tokens.css (the `wp-theme` handle),
+ * which is enqueued ahead of this file on the front end and is already inside
+ * the canvas iframe through wp-edit-blocks. The literal fallbacks exist for
+ * one case only: a document where that file failed to load. They are the same
+ * values @wordpress/ui hardcodes as ITS fallbacks, so the two layers agree
+ * even when both are running blind.
+ *
+ * tools/check-tokens.mjs fails the build if a --wpds-* name used here does not
+ * exist in the installed core token file.
+ */
+
+/*
+ * @wordpress/components' stylesheet resolves its accent from the wp-admin
+ * color scheme variables, which only exist inside wp-admin. A component
+ * rendered on a public page therefore falls back to its compiled default.
+ * Publishing the modern-blue triad here, sourced from the WPDS brand tokens,
+ * keeps a components-based mockup on the same accent as its @wordpress/ui
+ * neighbours. Values ported from ui-playground src/styles.css.
+ */
+body {
+	--wp-admin-theme-color: var( --wpds-color-background-interactive-brand-strong, #3858e9 );
+	--wp-admin-theme-color--rgb: 56, 88, 233;
+	--wp-admin-theme-color-darker-10: #2145e6;
+	--wp-admin-theme-color-darker-10--rgb: 33, 69, 230;
+	--wp-admin-theme-color-darker-20: #1d3fd4;
+	--wp-admin-theme-color-darker-20--rgb: 29, 63, 212;
+	--wp-admin-border-width-focus: var( --wpds-border-width-focus, 2px );
+
+	/*
+	 * NOT light-only any more. The comment that used to sit here said the WPDS
+	 * token set carried no prefers-color-scheme block and pinned the document
+	 * to light on that basis; design-tokens.css has carried one since it grew
+	 * an .is-style-wpds-appearance-system dark scope, so the premise was stale
+	 * and the pin was the reason a dark-mode machine still got a light document
+	 * scrollbar, light <select> popups, and a white rubber-band overscroll
+	 * gutter around a dark app. color-scheme never gates a media query, so this
+	 * was suppressing nothing except the UA's own paint.
+	 */
+	color-scheme: light dark;
+
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * The canvas and the page disagree on the initial box model for form controls
+ * (wp-admin's forms.min.css reaches a logged-in front end and never reaches
+ * the iframe). State it instead of inheriting it.
+ */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+/*
+ * Buttons: @wordpress/ui's Button is a 40px inline-flex row with an 8px gap
+ * and a 1px border it paints in its own background color. theme.json supplies
+ * the color, type and padding; only the box is left.
+ */
+.wp-element-button,
+.wp-block-button__link {
+	align-items: center;
+	display: inline-flex;
+	gap: var( --wpds-dimension-gap-sm, 8px );
+	justify-content: center;
+	min-height: var( --wpds-dimension-size-lg, 40px );
+	min-width: calc( 4ch + var( --wpds-dimension-padding-md, 12px ) * 2 );
+	overflow-wrap: anywhere;
+	text-align: center;
+	transition:
+		background-color var( --wpds-motion-duration-sm, 100ms ) var( --wpds-motion-easing-subtle, ease ),
+		border-color var( --wpds-motion-duration-sm, 100ms ) var( --wpds-motion-easing-subtle, ease );
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.wp-element-button,
+	.wp-block-button__link {
+		transition: none;
+	}
+}
+
+/* The outline variant, mapped to WPDS's weak brand interactive tokens. */
+.wp-block-button.is-style-outline > .wp-block-button__link:not( .has-background ) {
+	background-color: var( --wpds-color-background-interactive-brand-weak, transparent );
+	border-color: var( --wpds-color-stroke-interactive-brand, #3858e9 );
+	color: var( --wpds-color-foreground-interactive-brand, #3858e9 );
+}
+
+.wp-block-button.is-style-outline > .wp-block-button__link:not( .has-background ):hover,
+.wp-block-button.is-style-outline > .wp-block-button__link:not( .has-background ):focus {
+	background-color: var( --wpds-color-background-interactive-brand-weak-active, #e6eaf4 );
+	border-color: var( --wpds-color-stroke-interactive-brand-active, #2337c8 );
+	color: var( --wpds-color-foreground-interactive-brand-active, #0b0070 );
+}
+
+/*
+ * Form controls. WPDS inputs are 32px (size-md) with 12px of inline padding, a
+ * 1px interactive-neutral stroke and the small corner radius. Core's search
+ * and comment blocks are the ones a mockup actually reaches for.
+ */
+input[ type='text' ],
+input[ type='search' ],
+input[ type='email' ],
+input[ type='url' ],
+input[ type='tel' ],
+input[ type='number' ],
+input[ type='password' ],
+input[ type='date' ],
+input[ type='datetime-local' ],
+input[ type='month' ],
+input[ type='time' ],
+input[ type='week' ],
+select,
+textarea {
+	background-color: var( --wpds-color-background-surface-neutral-strong, #fff );
+	border: var( --wpds-border-width-xs, 1px ) solid var( --wpds-color-stroke-interactive-neutral, #8d8d8d );
+	border-radius: var( --wpds-border-radius-sm, 2px );
+	color: var( --wpds-color-foreground-content-neutral, #1e1e1e );
+	font-family: inherit;
+	font-size: var( --wpds-typography-font-size-md, 13px );
+	line-height: var( --wpds-typography-line-height-sm, 20px );
+	margin: 0;
+	min-height: var( --wpds-dimension-size-md, 32px );
+	padding: var( --wpds-dimension-padding-xs, 4px ) var( --wpds-dimension-padding-md, 12px );
+}
+
+textarea {
+	min-height: calc( var( --wpds-dimension-size-lg, 40px ) * 2 );
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: var( --wpds-color-foreground-content-neutral-weak, #707070 );
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+	border-color: var( --wpds-color-stroke-interactive-neutral-disabled, #dbdbdb );
+	color: var( --wpds-color-foreground-interactive-neutral-disabled, #8d8d8d );
+}
+
+/*
+ * One focus ring for the whole surface, drawn the way WPDS draws it: a
+ * stroke-focus outline at border-width-focus, which the token file itself
+ * thins to 1.5px on 2x displays.
+ */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[ tabindex ]:focus-visible {
+	outline: var( --wpds-border-width-focus, 2px ) solid var( --wpds-color-stroke-focus, #3858e9 );
+	outline-offset: 1px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+	border-color: var( --wpds-color-stroke-interactive-brand, #3858e9 );
+}
+
+/*
+ * iOS zooms the viewport when a focused control computes under 16px and never
+ * zooms back out. WPDS controls are 32px tall with 13px type by default,
+ * which trips this on a phone; force 16px at mobile widths only, so the
+ * desktop scale is untouched. 782px matches core's own admin-bar breakpoint,
+ * used throughout this theme as the mobile/tablet line.
+ */
+@media ( max-width: 782px ) {
+	/*
+	 * Wrapped in .wp-site-blocks :is() on purpose: :is() takes the specificity
+	 * of its most specific argument, so every control here scores (0,2,1) and
+	 * beats WooCommerce's .woocommerce-page select at (0,1,1), which otherwise
+	 * kept the sort dropdown at 12px on phones (themannequinshop.com).
+	 */
+	.wp-site-blocks :is(
+		input[ type='text' ],
+		input[ type='search' ],
+		input[ type='email' ],
+		input[ type='url' ],
+		input[ type='tel' ],
+		input[ type='number' ],
+		input[ type='password' ],
+		input[ type='date' ],
+		input[ type='datetime-local' ],
+		input[ type='month' ],
+		input[ type='time' ],
+		input[ type='week' ],
+		select,
+		textarea
+	) {
+		font-size: 16px;
+	}
+}
+
+
+/* Inline code, the one type role theme.json has no element for. */
+:where( :not( pre ) ) > code,
+kbd {
+	background-color: var( --wpds-color-background-surface-neutral-weak, #f4f4f4 );
+	border-radius: var( --wpds-border-radius-xs, 1px );
+	font-family: var( --wpds-typography-font-family-mono, 'Menlo', 'Consolas', monaco, monospace );
+	font-size: var( --wpds-typography-font-size-sm, 12px );
+	padding: 0 var( --wpds-dimension-padding-xs, 4px );
+}
+
+/*
+ * Tables: theme.json paints the outer border, the cell grid has no preset.
+ * A weak stroke inside a normal stroke is the WPDS surface pattern.
+ */
+.wp-block-table td,
+.wp-block-table th {
+	border-color: var( --wpds-color-stroke-surface-neutral-weak, #f0f0f0 );
+	padding: var( --wpds-dimension-padding-sm, 8px ) var( --wpds-dimension-padding-md, 12px );
+}
+
+.wp-block-table th {
+	font-weight: var( --wpds-typography-font-weight-emphasis, 600 );
+	text-align: start;
+}
+
+/*
+ * The blank canvas template drops the shell entirely, so it drops its gutter
+ * too. The root itself has no padding any more (an app-shell theme keeps its
+ * root at zero and document templates carry their own), so this only zeroes
+ * the template's own group.
+ */
+.wpds-canvas-blank {
+	padding: 0;
+}
+
+/*
+ * Core's table block draws a 3px near-black rule under the head and over the
+ * foot. Nothing in WPDS is 3px and nothing in it separates rows with content
+ * color, so restate both as the surface stroke. Measured on the front end
+ * before this rule: border-bottom 3px rgb(30, 30, 30).
+ */
+.wp-block-table thead {
+	border-bottom: var( --wpds-border-width-xs, 1px ) solid var( --wpds-color-stroke-surface-neutral, #dbdbdb );
+}
+
+.wp-block-table tfoot {
+	border-top: var( --wpds-border-width-xs, 1px ) solid var( --wpds-color-stroke-surface-neutral, #dbdbdb );
+}
+
+/* ------------------------------------------- the ground behind the app shell
+ *
+ * Global styles paint `body { background-color: var(--wp--preset--color--base) }`
+ * = #fcfcfc, and theme.json's palette has no dark expression, so on a dark
+ * machine the document behind the app stayed white. The shell is
+ * min-block-size: 100vh so it covers the viewport and you never see this in
+ * normal scroll -- but macOS rubber-band overscroll pulls the page off its
+ * anchor and flashes a white band above and below a black app, which is
+ * exactly the sort of half-dark that reads as broken.
+ *
+ * Matched here rather than by giving the theme.json palette dark values,
+ * because a preset whose value is a var() cannot render a swatch in the Site
+ * Editor's colour picker -- the palette chips would go blank. This is the same
+ * result for the one thing that is actually visible, at no cost to the editor.
+ *
+ * Keyed on the shell's own appearance class through :has(), so a page that
+ * deliberately pins itself light keeps a light ground. A browser without
+ * :has() support simply keeps today's white, which is the safe direction.
+ *
+ * The literals are --wpds-color-surface's two values, restated because that
+ * token is declared ON the shell, and body is its ancestor: it cannot read a
+ * custom property its own descendant defines.
+ */
+body:has( .is-style-wpds-appearance-dark ) {
+	background-color: #1e1e1e;
+}
+
+@media ( prefers-color-scheme: dark ) {
+	body:has( .is-style-wpds-appearance-system ) {
+		background-color: #1e1e1e;
+	}
+}

@@ -1,0 +1,992 @@
+/*
+ * The app shell and the sidebar's CONTENT pieces.
+ *
+ * The sidebar itself — panel, header, collapse, resize, drawer, rail, rows,
+ * sections, regions — is the wpds/app-sidebar block family in the WPDS Blocks
+ * plugin, which ships its own CSS and behaviour so the sidebar survives a
+ * theme switch. What remains here is what a THEME legitimately owns:
+ *
+ *  1. The shell row the sidebar sits in, and how it meets the admin bar.
+ *  2. The mockup content this theme puts INSIDE the sidebar (workspace
+ *     switcher, tip card, disclosures, action stack, profile footer), which
+ *     is authored content, not component.
+ *  3. That content's collapsed-rail treatment. The blocks broadcast the
+ *     .wpds-sidebar-collapsed state; content decides what it means for
+ *     itself.
+ */
+
+/*
+ * The block's one geometry knob: how much of the viewport something else
+ * already owns. The theme maps its shell offset onto it, so the drawer starts
+ * below the admin bar exactly as the shell does.
+ */
+.wpds-app-sidebar {
+	--wpds-app-sidebar-offset: var( --canvas-shell-offset, 0px );
+}
+
+/* ------------------------------------------------------ workspace switcher */
+
+/*
+ * The switcher is a wpds/button carrying this class; the button brings the
+ * control, the theme adds the width and the down-chevron that mark it as a
+ * chooser rather than an action.
+ */
+.wpds-app-sidebar__switcher.wp-block-wpds-button {
+	inline-size: 100%;
+	justify-content: space-between;
+	margin-inline: var( --wpds-dimension-padding-sm, 8px );
+	max-inline-size: calc( 100% - 2 * var( --wpds-dimension-padding-sm, 8px ) );
+}
+
+.wpds-app-sidebar__switcher.wp-block-wpds-button::after {
+	block-size: 7px;
+	border-block-start: 1.5px solid currentColor;
+	border-inline-end: 1.5px solid currentColor;
+	content: '';
+	flex: 0 0 auto;
+	inline-size: 7px;
+	rotate: 135deg;
+	translate: 0 -2px;
+}
+
+/*
+ * The workspace switcher is wpds/dropdown-menu now (Daniel, 2026-08-28:
+ * "Replace this with our dropdown block"), not a wpds/button wearing a caret
+ * this file drew for it. The button rules above are left in place for any
+ * shell still authoring one, but the real control is below.
+ *
+ * NO ::after HERE. The block draws its own chevron
+ * (.wpds-dropdown-menu__chevron), so the theme adding a second one is how a
+ * switcher ends up with two arrows. The theme supplies only what a SHELL
+ * decides: that this control spans the rail and pushes its chevron to the
+ * far edge.
+ */
+.wpds-app-sidebar__switcher.wp-block-wpds-dropdown-menu {
+	inline-size: 100%;
+	margin-inline: var( --wpds-dimension-padding-sm, 8px );
+	max-inline-size: calc( 100% - 2 * var( --wpds-dimension-padding-sm, 8px ) );
+}
+
+.wpds-app-sidebar__switcher.wp-block-wpds-dropdown-menu .wpds-dropdown-menu__trigger {
+	inline-size: 100%;
+	justify-content: space-between;
+}
+
+/* --------------------------------------------------------- action stack */
+
+.wpds-app-sidebar__section--ruled {
+	border-block-start: var( --wpds-border-width-xs, 1px ) solid var( --wpds-color-stroke-surface-neutral-weak, #f0f0f0 );
+	margin-block-start: var( --wpds-dimension-gap-sm, 8px );
+	padding-block-start: var( --wpds-dimension-gap-lg, 16px );
+}
+
+.wpds-app-sidebar__stack {
+	display: flex;
+	flex-direction: column;
+	gap: var( --wpds-dimension-gap-sm, 8px );
+	padding-inline: var( --wpds-dimension-padding-sm, 8px );
+}
+
+/* The actions are wpds/button; only their width is the sidebar's business. */
+.wpds-app-sidebar__stack .wp-block-wpds-button {
+	inline-size: 100%;
+	justify-content: flex-start;
+}
+
+/*
+ * The three actions carry an icon in BOTH states, drawn with the Dashicons
+ * font through a pseudo element rather than markup: nothing here can be
+ * stripped by kses, and the rail reuses the same glyph rather than keeping a
+ * second copy of the buttons. The reference asks for icons on exactly these
+ * three and forbids them on the numbered journeys, which keep their ordinals
+ * as the identifier.
+ *
+ * Placement is declared nowhere on purpose. wpds/button is already
+ * inline-flex, centred, with an 8px gap, so the glyph is simply the row's
+ * first flex child and the button's own gap spaces it -- one geometry, and
+ * the expanded row cannot drift from the rail's.
+ */
+.wpds-app-sidebar__action::before {
+	content: "\f125";
+	font-family: dashicons;
+	font-size: var( --wpds-dimension-size-xs, 20px );
+	line-height: 1;
+}
+
+.wpds-app-sidebar__action--help::before {
+	content: "\f223";
+}
+
+.wpds-app-sidebar__action--settings::before {
+	content: "\f111";
+}
+
+/*
+ * The Ask action is the chat's trigger, and its authored solid-brand look
+ * reads as "the assistant is open", so it only stands while it is. The
+ * ai-chat view script mirrors the panel onto aria-expanded; closed, the row
+ * repaints its solid tokens to the neutral weak pair and sits with its
+ * minimal siblings. Without JS the attribute never appears and the authored
+ * solid stands, matching the wide no-JS default of an open panel.
+ */
+.wpds-app-sidebar__stack .wpds-app-sidebar__action--ask[aria-expanded="false"] {
+	--wpds-button-solid-bg: var( --wpds-color-background-interactive-neutral-weak, #0000 );
+	--wpds-button-solid-fg: var( --wpds-color-foreground-interactive-neutral, #1e1e1e );
+}
+
+/*
+ * Hover keeps the neutral voice: the light grey the sibling rows get from
+ * wpds/sidebar-actions, not that block's darkened-brand solid hover, which
+ * sets background-color directly, so the token repaint alone cannot win.
+ * The custom property still repaints the border the variant derives from it.
+ */
+.wpds-app-sidebar__stack .wpds-app-sidebar__action--ask[aria-expanded="false"]:hover {
+	--wpds-button-solid-bg: var( --wpds-color-background-interactive-neutral-weak-active, #ededed );
+	background-color: var( --wpds-color-background-interactive-neutral-weak-active, #ededed );
+}
+
+/* ------------------------------------------------------- tip + disclosures */
+
+/* The cards take the inset the rows deliberately do not. */
+/*
+ * Doubled on the tip, plain on the disclosure, and the asymmetry is the point:
+ * wpds/tip-card moved to custom-ui-blocks and its own stylesheet zeroes the
+ * margin from an element-qualified selector (0,1,1), which outranks a single
+ * class here, so the card sat flush to both sidebar edges while every other
+ * card was inset (Daniel, 2026-08-28, with an arrow drawn at it). The
+ * disclosure has no such rule against it and needs no doubling. Two classes
+ * (0,2,0) beat one class and one element, so this is a win rather than a tie
+ * decided by load order.
+ */
+.wpds-app-sidebar__tip.wpds-app-sidebar__tip,
+.wpds-app-sidebar__disclosure {
+	margin-inline: var( --wpds-dimension-padding-sm, 8px );
+}
+
+.wpds-app-sidebar__tip {
+	background-color: var( --wpds-color-background-surface-info-weak, #f3f9ff );
+	border: var( --wpds-border-width-xs, 1px ) solid var( --wpds-color-stroke-surface-info, #a9c6e7 );
+	border-radius: var( --wpds-border-radius-lg, 8px );
+	color: var( --wpds-color-foreground-content-info, #001b4f );
+	font-size: var( --wpds-typography-font-size-sm, 12px );
+	line-height: var( --wpds-typography-line-height-xs, 16px );
+	padding: var( --wpds-dimension-padding-md, 12px );
+}
+
+.wpds-app-sidebar__tip p {
+	font-size: inherit;
+	line-height: inherit;
+	margin: 0;
+}
+
+.wpds-app-sidebar__tip-kind {
+	color: var( --wpds-color-foreground-interactive-brand, #3858e9 );
+	display: block;
+	font-size: var( --wpds-typography-font-size-xs, 11px );
+	font-weight: var( --wpds-typography-font-weight-emphasis, 600 );
+	letter-spacing: 0.04em;
+	margin-block-end: var( --wpds-dimension-gap-sm, 8px );
+	text-transform: uppercase;
+}
+
+.wpds-app-sidebar__tip-foot {
+	align-items: center;
+	display: flex;
+	gap: var( --wpds-dimension-gap-sm, 8px );
+	justify-content: space-between;
+	margin-block-start: var( --wpds-dimension-gap-sm, 8px );
+}
+
+.wpds-app-sidebar__tip-foot a {
+	font-weight: var( --wpds-typography-font-weight-emphasis, 600 );
+}
+
+.wpds-app-sidebar__disclosure {
+	border: var( --wpds-border-width-xs, 1px ) solid var( --wpds-color-stroke-surface-neutral-weak, #f0f0f0 );
+	border-radius: var( --wpds-border-radius-md, 4px );
+	font-size: var( --wpds-typography-font-size-sm, 12px );
+	line-height: var( --wpds-typography-line-height-xs, 16px );
+	padding: var( --wpds-dimension-padding-sm, 8px ) var( --wpds-dimension-padding-md, 12px );
+}
+
+.wpds-app-sidebar__disclosure summary {
+	cursor: var( --wpds-cursor-control, pointer );
+	font-weight: var( --wpds-typography-font-weight-emphasis, 600 );
+}
+
+.wpds-app-sidebar__disclosure p {
+	font-size: inherit;
+	line-height: inherit;
+	margin: var( --wpds-dimension-gap-sm, 8px ) 0 0;
+}
+
+/* ----------------------------------------------------------------- footer */
+
+/*
+ * The identity row fills the sidebar width: a clickable area's background is
+ * the whole row, per the house rule.
+ */
+.wpds-app-sidebar__profile {
+	align-items: center;
+	background: none;
+	border: var( --wpds-border-width-xs, 1px ) solid transparent;
+	border-radius: var( --wpds-border-radius-sm, 2px );
+	color: var( --wpds-color-foreground-content-neutral, #1e1e1e );
+	cursor: var( --wpds-cursor-control, pointer );
+	display: flex;
+	font: inherit;
+	gap: var( --wpds-dimension-gap-sm, 8px );
+	inline-size: 100%;
+	padding: var( --wpds-dimension-padding-sm, 8px );
+	text-align: start;
+}
+
+.wpds-app-sidebar__profile:hover {
+	background-color: var( --wpds-color-background-interactive-neutral-weak-active, #ededed );
+}
+
+.wpds-app-sidebar__profile p {
+	margin: 0;
+}
+
+.wpds-app-sidebar__avatar {
+	align-items: center;
+	background-color: var( --wpds-color-background-surface-brand, #ecf0fa );
+	block-size: 28px;
+	border-radius: 50%;
+	color: var( --wpds-color-foreground-interactive-brand, #3858e9 );
+	display: flex;
+	flex: 0 0 auto;
+	font-size: var( --wpds-typography-font-size-sm, 12px );
+	font-weight: var( --wpds-typography-font-weight-emphasis, 600 );
+	inline-size: 28px;
+	justify-content: center;
+	margin: 0;
+}
+
+.wpds-app-sidebar__signed-in {
+	color: var( --wpds-color-foreground-content-neutral-weak, #707070 );
+	display: block;
+	font-size: var( --wpds-typography-font-size-xs, 11px );
+	line-height: var( --wpds-typography-line-height-xs, 16px );
+}
+
+.wpds-app-sidebar__display-name {
+	display: block;
+	font-size: var( --wpds-typography-font-size-md, 13px );
+	font-weight: var( --wpds-typography-font-weight-emphasis, 600 );
+	line-height: var( --wpds-typography-line-height-sm, 20px );
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Changelog, README and API Reference travel together, per the reference. */
+.wpds-app-sidebar__docs {
+	display: flex;
+	flex-wrap: wrap;
+	font-size: var( --wpds-typography-font-size-sm, 12px );
+	gap: var( --wpds-dimension-gap-sm, 8px );
+	line-height: var( --wpds-typography-line-height-xs, 16px );
+	margin: 0;
+	padding-inline: var( --wpds-dimension-padding-sm, 8px );
+}
+
+.wpds-app-sidebar__version {
+	color: var( --wpds-color-foreground-content-neutral-weak, #707070 );
+	font-size: var( --wpds-typography-font-size-xs, 11px );
+	line-height: var( --wpds-typography-line-height-xs, 16px );
+	margin: 0;
+	padding-inline: var( --wpds-dimension-padding-sm, 8px );
+}
+
+/* ------------------------------------- this content in the collapsed rail */
+
+@media ( min-width: 783px ) {
+	/* Chrome that carries no meaning at 72px goes entirely. */
+	.wpds-sidebar-collapsed .wpds-app-sidebar__switcher,
+	.wpds-sidebar-collapsed .wpds-app-sidebar__tip,
+	.wpds-sidebar-collapsed .wpds-app-sidebar__disclosure,
+	.wpds-sidebar-collapsed .wpds-app-sidebar__docs,
+	.wpds-sidebar-collapsed .wpds-app-sidebar__version {
+		display: none;
+	}
+
+	/*
+	 * Labels are CLIPPED, never display:none: the rail keeps an accessible
+	 * name on every control, and display:none would take the name out of the
+	 * accessibility tree along with the pixels.
+	 */
+	.wpds-sidebar-collapsed .wpds-app-sidebar__signed-in,
+	.wpds-sidebar-collapsed .wpds-app-sidebar__display-name {
+		block-size: 1px;
+		clip-path: inset( 50% );
+		inline-size: 1px;
+		overflow: hidden;
+		position: absolute;
+		white-space: nowrap;
+	}
+
+	.wpds-sidebar-collapsed .wpds-app-sidebar__profile {
+		justify-content: center;
+		/*
+		 * Zero, not a small inset: the avatar is the widest thing in the rail
+		 * and its host's padding pushes it off the rail's centre line.
+		 */
+		padding-inline: 0;
+	}
+
+	.wpds-sidebar-collapsed .wpds-app-sidebar__section--ruled {
+		padding-block-start: var( --wpds-dimension-gap-sm, 8px );
+	}
+
+	.wpds-sidebar-collapsed .wpds-app-sidebar__stack {
+		padding-inline: 0;
+	}
+
+	/*
+	 * The three actions become JUST their icons: the glyphs are declared once
+	 * in the base rule below and painted in both states, so the rail needs no
+	 * second copy of the buttons and collapsing only has to take the label
+	 * away.
+	 *
+	 * font-size: 0 rather than a clip, because the label is the button's own
+	 * text node and there is no element to clip. The text stays in the
+	 * accessibility tree, and the pseudo element sets its own size so the
+	 * glyph survives the zero. It also collapses the component's min-width to
+	 * nothing, which is what lets a 40px control fit a 72px rail.
+	 */
+	.wpds-sidebar-collapsed .wpds-app-sidebar__action {
+		font-size: 0;
+		gap: 0;
+		justify-content: center;
+		min-inline-size: 0;
+		padding-inline: 0;
+	}
+
+}
+
+/* ------------------------------------------------------------- the shell */
+
+/*
+ * The scroll contract changed 2026-08-27: page scroll owns the shell.
+ * The earlier viewport-pinned version (height + overflow hidden, main
+ * as its own scroller) put THREE scrollbars on screen; now the columns
+ * are sticky and the browser's bar is the only visible one.
+ */
+.wpds-app-shell {
+	/*
+	 * How much of the viewport something else already owns. Zero for a
+	 * visitor; the admin bar's height for a logged-in editor, who is most of
+	 * the people looking at a mockup.
+	 *
+	 * Deliberately NOT in the --wpds- namespace. That prefix means "a WPDS
+	 * design token" everywhere in this theme, and tools/check-tokens.mjs
+	 * enforces it. A theme-local variable gets a theme-local name; the
+	 * sidebar block's own --wpds-app-sidebar-offset knob is fed FROM this at
+	 * the top of this file.
+	 */
+	--canvas-shell-offset: 0px;
+
+	align-items: stretch;
+	/*
+	 * ONE visible scrollbar, the browser's (Daniel, 2026-08-27): the shell
+	 * no longer pins to the viewport - the page scrolls natively, the
+	 * sidebar and assistant stick, and their internal scrollers hide
+	 * their bars. min keeps short pages filling the viewport.
+	 */
+	min-block-size: calc( 100vh - var( --canvas-shell-offset ) );
+
+	/*
+	 * One expression for both header bars, so the sidebar's and the page's
+	 * line up as a single rule across the shell: a 40px control between two
+	 * 16px paddings and NOTHING else. The hairline term is gone (the W1
+	 * immunity diagnosis, changed together with the wpds/app-sidebar block):
+	 * both bars now draw their divider as an inset box-shadow that takes no
+	 * layout, so the height is EVEN (72, not 73) and centred children stop
+	 * landing on half pixels. The sidebar block computes the same expression
+	 * for its own header, so the two bars agree without either measuring the
+	 * other.
+	 */
+	/*
+	 * The SLIM bar (Daniel, 2026-09-01, the P2 reference): the lean
+	 * expression that used to be the small-screen override is the one height
+	 * at every width now -- a 40px control between two 8px paddings, 56
+	 * even. The wpds/app-sidebar block computes the same expression for its
+	 * own header, so the two bars still agree without either measuring the
+	 * other.
+	 */
+	--canvas-header-height: calc(
+		var( --wpds-dimension-size-lg, 40px ) + 2 * var( --wpds-dimension-padding-sm, 8px )
+	);
+}
+
+/*
+ * WordPress pushes the document down with html { margin-top: 32px !important }
+ * when the admin bar is present, so a shell of exactly 100vh makes the page
+ * 100vh + 32px and it scrolls by precisely the bar's height. The height comes
+ * from CORE's variable: admin-bar.css sets --wp-admin--admin-bar--height to
+ * 32px and 46px at its own breakpoint, and a theme restating those numbers
+ * would drift the day core changes them.
+ */
+.admin-bar .wpds-app-shell {
+	--canvas-shell-offset: var( --wp-admin--admin-bar--height, 0px );
+}
+
+/*
+ * A DESCENDANT selector, not a child one. The sidebar lives inside a template
+ * part wrapper, and display: contents on that wrapper changes how it LAYS
+ * OUT, not who its parent is in the DOM: > still walks the real tree and
+ * would miss it.
+ */
+.wpds-app-shell .wpds-app-sidebar {
+	flex: 0 0 auto;
+}
+
+/* Sticky columns: they hold the viewport while the page scrolls. */
+@media ( min-width: 783px ) {
+	.wpds-app-shell .wpds-app-sidebar {
+		align-self: flex-start;
+		block-size: calc( 100vh - var( --canvas-shell-offset, 0px ) );
+		inset-block-start: var( --canvas-shell-offset, 0px );
+		position: sticky;
+	}
+}
+
+/* Internal scrollers keep scrolling, without a second visible bar. */
+.wpds-app-shell .wpds-sidebar-body,
+.wpds-app-shell .wpds-custom-ai-chat__transcript,
+.wpds-app-shell .wpds-custom-ai-conversations__list {
+	scrollbar-width: none;
+}
+
+.wpds-app-shell .wpds-sidebar-body::-webkit-scrollbar,
+.wpds-app-shell .wpds-custom-ai-chat__transcript::-webkit-scrollbar,
+.wpds-app-shell .wpds-custom-ai-conversations__list::-webkit-scrollbar {
+	display: none;
+}
+
+/*
+ * The wrapper is not a box. The part carries its own aside so it styles
+ * itself when someone edits the part on its own, where there is no shell.
+ */
+.wpds-app-shell > .wp-block-template-part {
+	display: contents;
+}
+
+.wpds-app-shell > .wpds-app-shell__main {
+	flex: 1 1 auto;
+	min-inline-size: 0;
+}
+
+/*
+ * Below the breakpoint the sidebar becomes the block's fixed drawer, so the
+ * shell stops pinning itself to the viewport and hands scrolling back to the
+ * page.
+ */
+@media ( max-width: 782px ) {
+	.wpds-app-shell {
+		block-size: auto;
+		flex-wrap: wrap;
+		overflow: visible;
+	}
+
+	.wpds-app-shell > .wpds-app-shell__main {
+		inline-size: 100%;
+		overflow-y: visible;
+	}
+}
+
+/*
+ * Room for the folded sidebar's escaped toggle on DESKTOP: the control parks
+ * fixed at the page header's leading padding (the slim-toolbar spot), so the
+ * title starts one control-and-a-gap further in -- and the page's INNER
+ * content indents with it, so the subtitle and the content region keep
+ * sharing the title's left edge instead of sitting 32px proud of it (Daniel,
+ * 2026-09-01). The indent is TRANSITIONED on the sidebar's own timing, so it
+ * travels with the fold (click to display shifts the layout, same day)
+ * instead of snapping while the column is still moving. The mobile
+ * counterpart lives with the drawer duties below.
+ */
+@media ( min-width: 783px ) {
+	.wpds-admin-page__header-lead,
+	.wpds-admin-page__subtitle,
+	.wpds-admin-page__content,
+	.wpds-admin-page__header {
+		transition:
+			padding-inline-start var( --wpds-motion-duration-md, 200ms ) var( --wpds-motion-easing-subtle, ease ),
+			padding-inline-end var( --wpds-motion-duration-md, 200ms ) var( --wpds-motion-easing-subtle, ease );
+	}
+
+	@media ( prefers-reduced-motion: reduce ) {
+		.wpds-admin-page__header-lead,
+		.wpds-admin-page__subtitle,
+		.wpds-admin-page__content {
+			transition: none;
+		}
+	}
+
+	.wpds-sidebar-collapsed .wpds-admin-page__header-lead,
+	.wpds-sidebar-collapsed .wpds-admin-page__subtitle {
+		padding-inline-start: var( --wpds-dimension-size-md, 32px );
+	}
+
+	/* The content region's own gutter is restated, not added to: its base
+	 * rule carries the 24px, so the indent is 24 + 32 = 56, the title's own
+	 * start. */
+	.wpds-sidebar-collapsed .wpds-admin-page__content {
+		padding-inline-start: calc(
+			var( --wpds-dimension-padding-2xl, 24px ) + var( --wpds-dimension-size-md, 32px )
+		);
+	}
+
+	/*
+	 * BALANCED (Daniel, 2026-09-02, the charts examples page: "give some
+	 * margin on the right to match the one on the left"). The escaped
+	 * toggle earns the left its extra 32px; nothing earned the right its
+	 * absence, so the folded page read 56 against 24. The header and the
+	 * content region take the same 32px on the trailing side, so the
+	 * actions and the content's right edge sit where the title's left edge
+	 * says they should.
+	 */
+	.wpds-sidebar-collapsed .wpds-admin-page__header,
+	.wpds-sidebar-collapsed .wpds-admin-page__content {
+		padding-inline-end: calc(
+			var( --wpds-dimension-padding-2xl, 24px ) + var( --wpds-dimension-size-md, 32px )
+		);
+	}
+}
+
+/*
+ * The blank canvas template drops the shell entirely, so it drops its gutter
+ * too. The root itself has no padding any more (an app-shell theme keeps its
+ * root at zero and document templates carry their own), so this only zeroes
+ * the template's own group.
+ */
+.wpds-canvas-blank {
+	padding: 0;
+}
+/* ---------------------------------------------------------- framed layout */
+
+/*
+ * The shell's second mode, ported from UI Playground's .wpc-app-frame
+ * .is-framed: the surround shows through (white, per the house style: the
+ * frame reads via its border, not via a tinted field), the sidebar blends
+ * into the surround, and the work column floats as a rounded, bordered
+ * panel. Flush stays the default; the toggle below is the only way in.
+ * Desktop-only: below the breakpoint the sidebar is a drawer and the frame
+ * has nothing to float against.
+ */
+@media ( min-width: 783px ) {
+	.wpds-shell-framed .wpds-app-shell {
+		gap: var( --wpds-dimension-gap-lg, 16px );
+		padding: var( --wpds-dimension-padding-lg, 16px );
+	}
+
+	/*
+	 * The sidebar escapes the frame's padding on its three outer sides, the
+	 * donor's negative-margin move: full-bleed against the viewport while the
+	 * main panel floats beside it. Its divider goes; the gap is the divider.
+	 */
+	.wpds-shell-framed .wpds-app-shell .wpds-app-sidebar {
+		/* 100% is the shell CONTENT box; the escaped padding is given back, or
+		 * the panel stops 2 x 16px short of the viewport bottom. */
+		block-size: calc( 100% + 2 * var( --wpds-dimension-padding-lg, 16px ) );
+		border-inline-end: 0;
+		margin-block: calc( -1 * var( --wpds-dimension-padding-lg, 16px ) );
+		margin-inline-start: calc( -1 * var( --wpds-dimension-padding-lg, 16px ) );
+	}
+
+	.wpds-shell-framed .wpds-app-shell > .wpds-app-shell__main {
+		background-color: var( --wpds-color-background-surface-neutral-strong, #fff );
+		border: var( --wpds-border-width-xs, 1px ) solid var( --wpds-color-stroke-surface-neutral, #dbdbdb );
+		border-radius: var( --wpds-border-radius-lg, 8px );
+	}
+}
+
+/* ------------------------------------------------------- assistant column */
+
+/*
+ * The assistant rail (Daniel, 2026-08-27): the ai-chat panel as a fixed
+ * right column of the shell, beside the main panel on every shell
+ * template. The block brings its own chrome; the shell only gives it a
+ * lane. Below the drawer breakpoint there is no room for a third column.
+ */
+.wpds-app-shell .wpds-app-shell__assistant {
+	align-self: flex-start;
+	block-size: calc( 100vh - var( --canvas-shell-offset, 0px ) );
+	/*
+	 * The ONE line between the main panel and the assistant, the shell's own
+	 * hairline in the sidebar's gray (Daniel, 2026-09-02: the panel no longer
+	 * draws a box border of its own; dk1-ai-assistant's host zeroes it).
+	 *
+	 * AN INSET SHADOW, NOT A BORDER, because a border here takes layout and
+	 * the panel's width is authored twice. The chat's resize handle writes a
+	 * pixel count to the inner aside and the same count to this column's
+	 * flex basis; the column is border-box, so it spent one of those pixels
+	 * on the border and left its content box a pixel short of the aside
+	 * standing in it. The aside overhung the viewport by exactly one pixel
+	 * and the whole page grew a horizontal scrollbar (Daniel, 2026-09-03:
+	 * "overflow nit when AI assistant is active"). A shadow paints the same
+	 * hairline and takes no width, so the two numbers can stay equal - the
+	 * same reason the sidebar header draws its own divider this way.
+	 *
+	 * OUTSIDE, not inset. An inset shadow paints over this element's own
+	 * background but UNDER its children, and the chat panel is an opaque
+	 * white child sitting flush at the same left edge and the same width, so
+	 * it covered the line completely and the seam went missing (Daniel,
+	 * 2026-09-03: "still missing the left side border"). An outer shadow
+	 * offset one pixel to the leading side paints just outside the column,
+	 * over the main panel, where nothing of ours can cover it - and, like the
+	 * inset one, it takes no width.
+	 */
+	box-shadow: calc( -1 * var( --wpds-border-width-xs, 1px ) ) 0 0 var( --wpds-color-stroke-surface-neutral-weak, #f0f0f0 );
+	display: flex;
+	/* The chat's resize handle writes the size (ai-agent-block view.js). */
+	flex: 0 0 var( --wpds-app-shell-assistant-size, 320px );
+	flex-direction: column;
+	inset-block-start: var( --canvas-shell-offset, 0px );
+	min-inline-size: 0;
+	position: sticky;
+}
+
+/* The panel is now a group of two surfaces (chat + conversations); the
+   visible one fills the column. */
+.wpds-app-shell__assistant > .wpds-custom-ai-chat,
+.wpds-app-shell__assistant > .wpds-custom-ai-conversations {
+	flex: 1 1 auto;
+	min-block-size: 0;
+}
+
+@media ( max-width: 899px ) {
+	.wpds-app-shell .wpds-app-shell__assistant {
+		display: none;
+	}
+}
+
+/*
+ * The assistant as a summoned panel: wide screens show the shell column
+ * always; below the breakpoint the column is gone, and the
+ * wpds-assistant-open class (toggled by the chat's view.js from any
+ * .wpds-open-assistant trigger, the Ask button first) floats it over
+ * the content as a fixed right panel, the Lingo shape.
+ */
+@media ( max-width: 899px ) {
+	.wpds-assistant-open .wpds-app-shell .wpds-app-shell__assistant {
+		display: flex;
+		inline-size: var( --wpds-app-shell-assistant-size, 320px );
+		inset-block: var( --wpds-app-sidebar-offset, 0px ) 0;
+		inset-inline-end: 0;
+		max-inline-size: 92vw;
+		position: fixed;
+		z-index: 30;
+	}
+}
+
+/* Wide screens: the column stands by default; the closed class (set by
+   the chat's close action) collapses it, and Ask brings it back. */
+@media ( min-width: 900px ) {
+	.wpds-assistant-closed .wpds-app-shell .wpds-app-shell__assistant {
+		display: none;
+	}
+}
+
+/*
+ * The panel's two surfaces (Daniel, 2026-08-27: "The header's history
+ * action should swap the panel to the conversations screen"): the chat
+ * stands by default, the conversations screen waits; the view script's
+ * wpds-assistant-history class swaps them. Scoped to the panel wrapper,
+ * so a conversations screen placed anywhere else never hides.
+ */
+.wpds-app-shell__assistant > .wpds-custom-ai-conversations {
+	display: none;
+}
+
+.wpds-assistant-history .wpds-app-shell__assistant > .wpds-custom-ai-conversations {
+	display: flex;
+}
+
+.wpds-assistant-history .wpds-app-shell__assistant > .wpds-custom-ai-chat {
+	display: none;
+}
+
+/*
+ * The workspace switcher fills the panel.
+ *
+ * wpds/dropdown-menu sizes its surface to its content (max-content, capped at
+ * 320px), which is right for a menu hanging off a toolbar button and wrong for
+ * a switcher that IS the width of the sidebar: the trigger spanned the panel
+ * and the menu under it did not, so the two edges disagreed. The block keeps
+ * its own default; only the shell's switcher is overridden, here, where the
+ * shell's geometry is decided.
+ */
+.wpds-app-sidebar__switcher .wpds-dropdown-menu__surface {
+	inline-size: 100%;
+	max-inline-size: none;
+}
+
+/* ============================================ the shell's mobile drawer duties
+ *
+ * The DRAWER and its opener belong to wpds/app-sidebar and are styled there --
+ * including the 40x40 hamburger, which is the block's own control. What is left
+ * here is the shell's side of the contract: the room the opener needs, the veil
+ * over the shell's own work column, and the scroll lock. If the opener ever
+ * goes invisible again on a phone, the bug is in the block's stylesheet, not
+ * this one: see the specificity note in its style.scss.
+ */
+@media ( max-width: 782px ) {
+
+	/*
+	 * The block's opener is the 24px ghost control fixed at the viewport's
+	 * edge offset (small again, Daniel, 2026-09-01), so the page title
+	 * starts one control-and-a-gap in: 8 + 24 ends at 32, and 32px of lead
+	 * padding on a 16px gutter puts the title at 48.
+	 */
+	.wpds-sidebar-collapsed .wpds-admin-page__header-lead {
+		padding-inline-start: var( --wpds-dimension-size-md, 32px );
+	}
+
+	/*
+	 * NO SCRIM any more (Daniel, 2026-09-01): the drawer is a full-width
+	 * takeover now, so there is no "outside" left to veil and nothing modal
+	 * about it. What survives is the scroll lock below -- the page behind a
+	 * takeover must not scroll under it. Gated on .wpds-js because the block
+	 * adds that class itself: without a script nothing ever collapses the
+	 * sidebar, and an ungated lock would freeze the page for a reader who
+	 * cannot close what is "open".
+	 */
+	.wpds-js:not( .wpds-sidebar-collapsed ) body {
+		overflow: hidden;
+	}
+}
+
+/* ---------------------------------------------- the assistant, kept on screen
+ *
+ * The assistant panel is a re-resizable box: its width is an INLINE style
+ * written from React state, not a rule and not a block attribute, so no
+ * selector can outrank it and !important is genuinely the only lever. It is
+ * used here on inline-size and its bounds ONLY -- everything else about the
+ * panel is left to fight ordinary rules.
+ *
+ * Measured at 375px: the panel rendered 400px wide on a 320px floor,
+ * overflowing the viewport and clipping its own header actions off the right
+ * edge, which is what put its Close control out of reach. Descendant
+ * combinators throughout, never `>`: the package's ThemeProvider inserts a div
+ * between the mount and the aside.
+ */
+@media ( max-width: 899px ) {
+	.wpds-assistant-open .wpds-app-shell .wpds-app-shell__assistant .wpds-ai-chat {
+		inline-size: 100% !important;
+		max-inline-size: 100% !important;
+		min-inline-size: 0 !important;
+	}
+}
+
+@media ( max-width: 782px ) {
+	.wpds-assistant-open .wpds-app-shell .wpds-app-shell__assistant {
+		inline-size: 100vw;
+		inline-size: 100dvw;
+		inset-inline: 0;
+		max-inline-size: 100%;
+	}
+
+	/* Edge to edge: a side border on a full-bleed sheet is just a seam. */
+	.wpds-assistant-open .wpds-app-shell .wpds-app-shell__assistant .wpds-ai-chat {
+		border-inline: 0;
+	}
+}
+
+/* ------------------------------------------------------ assistant bubble */
+
+/*
+ * The assistant's own summon control (Daniel, 2026-09-01). ChatHost renders
+ * NOTHING while closed -- no launcher, no FAB -- so a site whose sidebar has
+ * no Ask control, or whose sidebar is folded away entirely, had no visible
+ * way in. app-shell.js injects this button wearing
+ * data-wpds-toggles="assistant", the chat block's own public affordance, so
+ * the chat script keeps ownership of the state; the theme only paints and
+ * places it. It shows ONLY while the panel is off screen: the panel's own
+ * header carries the close, and a bubble under an open panel is clutter.
+ */
+/* The SAME design language as the sidebar's toggle (Daniel, 2026-09-01):
+ * a ghost control, transparent at rest, the light-grey wash on hover, and --
+ * same day -- the toggle's 32px padded box with the large corner radius
+ * around the glyph. No carried surface, matching the toggle's own trade. */
+.wpds-assistant-fab {
+	align-items: center;
+	appearance: none;
+	background: none;
+	block-size: var( --wpds-dimension-size-md, 32px );
+	border: var( --wpds-border-width-xs, 1px ) solid transparent;
+	border-radius: var( --wpds-border-radius-lg, 8px );
+	color: var( --wpds-color-foreground-interactive-neutral-weak, #707070 );
+	cursor: var( --wpds-cursor-control, pointer );
+	display: none;
+	inline-size: var( --wpds-dimension-size-md, 32px );
+	inset-block-end: var( --wpds-dimension-padding-lg, 16px );
+	inset-inline-end: var( --wpds-dimension-padding-lg, 16px );
+	justify-content: center;
+	margin: 0;
+	padding: 0;
+	/* Under the drawer's z-20: a full-width sidebar takeover covers it. */
+	position: fixed;
+	z-index: 19;
+}
+
+.wpds-assistant-fab:hover {
+	background-color: var( --wpds-color-background-interactive-neutral-weak-active, #ededed );
+	color: var( --wpds-color-foreground-interactive-neutral, #1e1e1e );
+}
+
+/* Pinned for the same reason the profile menu pins its icons: .dashicons
+ * sets a 20px font at (0,1,0) and would otherwise size the row itself. */
+.wpds-assistant-fab .dashicons {
+	block-size: var( --wpds-dimension-size-sm, 20px );
+	font-size: var( --wpds-dimension-size-sm, 20px );
+	inline-size: var( --wpds-dimension-size-sm, 20px );
+	line-height: 1;
+}
+
+/*
+ * Wide screens: the column stands by default and only the chat's close
+ * action collapses it, so the bubble follows the closed class. Narrow: the
+ * panel is summoned, so closed is the default and the bubble stands until
+ * the open class arrives.
+ */
+@media ( min-width: 900px ) {
+	.wpds-assistant-closed .wpds-assistant-fab {
+		display: inline-flex;
+	}
+}
+
+@media ( max-width: 899px ) {
+	:root:not( .wpds-assistant-open ) .wpds-assistant-fab {
+		display: inline-flex;
+	}
+}
+
+/* ------------------------------------------------------------ profile menu
+ *
+ * Sign out, Settings, and -- on a site whose sidebar has no Ask control of its
+ * own -- a way back to the assistant, hung off the profile row rather than
+ * stacked under it as more footer rows.
+ *
+ * Everything is expressed in tokens so the menu follows the appearance the
+ * shell is in; nothing here hardcodes a light-mode value.
+ *
+ * The panel is only HIDDEN under .wpds-js. Without a script the row is still a
+ * plain link to settings and these render as visible rows in the footer, which
+ * keeps sign-out reachable rather than sealing it behind an interaction that
+ * cannot happen.
+ */
+.wpds-profile-menu {
+	position: relative;
+}
+
+.wpds-js .wpds-profile-menu__panel {
+	display: none;
+}
+
+.wpds-js .wpds-profile-menu.is-open .wpds-profile-menu__panel {
+	display: block;
+}
+
+/*
+ * A drop-UP: the profile row is the last thing in the footer, at the bottom of
+ * the viewport, so a panel below it would open off screen.
+ */
+.wpds-js .wpds-profile-menu__panel {
+	background-color: var( --wpds-color-background-surface-neutral-strong, #fff );
+	border: var( --wpds-border-width-xs, 1px ) solid var( --wpds-color-stroke-neutral-weak, #e0e0e0 );
+	border-radius: var( --wpds-border-radius-md, 4px );
+	box-shadow: var( --wpds-shadow-m, 0 5px 15px rgba( 0, 0, 0, 0.08 ) );
+	inset-block-end: calc( 100% + var( --wpds-dimension-gap-sm, 8px ) );
+	inset-inline: var( --wpds-dimension-gap-sm, 8px );
+	padding-block: var( --wpds-dimension-padding-sm, 8px );
+	position: absolute;
+	z-index: 22;
+}
+
+.wpds-profile-menu__item {
+	align-items: center;
+	appearance: none;
+	background: none;
+	border: 0;
+	color: var( --wpds-color-foreground-content-neutral, #1e1e1e );
+	cursor: var( --wpds-cursor-control, pointer );
+	display: flex;
+	font-family: inherit;
+	font-size: var( --wpds-typography-font-size-sm, 13px );
+	font-weight: var( --wpds-typography-font-weight-default, 400 );
+	gap: var( --wpds-dimension-gap-sm, 8px );
+	inline-size: 100%;
+	line-height: 1.4;
+	padding: var( --wpds-dimension-padding-sm, 8px ) var( --wpds-dimension-padding-md, 12px );
+	text-align: start;
+	text-decoration: none;
+}
+
+/*
+ * Scoped through the panel, because `footer.wpds-sidebar-footer a` paints
+ * every link in the footer brand-blue at (0,1,2) -- a bare a.wpds-profile-menu__item
+ * is (0,1,1) and LOSES to it. Measured: the menu's links came out #3858e9
+ * while the button between them was correctly #1e1e1e, which is exactly what
+ * a half-winning colour rule looks like. Through the panel this is (0,2,1).
+ */
+.wpds-profile-menu__panel a.wpds-profile-menu__item,
+.wpds-profile-menu__panel a.wpds-profile-menu__item:visited {
+	color: var( --wpds-color-foreground-content-neutral, #1e1e1e );
+}
+
+.wpds-profile-menu__panel .wpds-profile-menu__item:hover,
+.wpds-profile-menu__panel .wpds-profile-menu__item:focus-visible {
+	background-color: var( --wpds-color-background-interactive-neutral-weak-active, #ededed );
+	color: var( --wpds-color-foreground-interactive-neutral, #1e1e1e );
+}
+
+/*
+ * Pinned because .dashicons sets font-size 20px at (0,1,0) and would otherwise
+ * decide the row's height by itself.
+ *
+ * THE TOKEN IS -xs, NOT -sm. Both names read like "the small icon", and the
+ * fallback written beside each of them said 20px, so the difference was
+ * invisible in the source - but the sidebar's own nav items size their
+ * dashicon on --wpds-dimension-size-xs and this row sized its own on
+ * --wpds-dimension-size-sm, which the token table resolves to 24px. The
+ * result was a Tools menu whose gear and exit glyphs were a fifth larger
+ * than every icon in the rail above them (Daniel, 2026-09-03: "icon sizes
+ * are inconsistent with the rest of the site"). Same token as the nav item
+ * now, so the two cannot drift apart again.
+ */
+.wpds-profile-menu__icon.dashicons {
+	block-size: var( --wpds-dimension-size-xs, 20px );
+	color: var( --wpds-color-foreground-content-neutral-weak, #707070 );
+	flex: 0 0 auto;
+	font-size: var( --wpds-dimension-size-xs, 20px );
+	inline-size: var( --wpds-dimension-size-xs, 20px );
+	line-height: 1;
+}
+
+/*
+ * In the collapsed rail the footer is ~44px wide, so the panel cannot be
+ * inset to the row's width -- it is given a real one and escapes to the side.
+ */
+@media ( min-width: 783px ) {
+	.wpds-sidebar-collapsed .wpds-js .wpds-profile-menu__panel,
+	.wpds-js .wpds-sidebar-collapsed .wpds-profile-menu__panel {
+		inline-size: max-content;
+		inset-inline: 0 auto;
+		min-inline-size: 180px;
+	}
+}
+
+/*
+ * The drawer is fixed and clips nothing, but the footer scrolls with the
+ * sidebar's body, so on a phone the panel is pinned to the viewport instead of
+ * to a row that may be halfway off it.
+ */
+@media ( max-width: 782px ) {
+	.wpds-js .wpds-profile-menu__panel {
+		inset-inline: var( --wpds-dimension-gap-sm, 8px );
+	}
+}
